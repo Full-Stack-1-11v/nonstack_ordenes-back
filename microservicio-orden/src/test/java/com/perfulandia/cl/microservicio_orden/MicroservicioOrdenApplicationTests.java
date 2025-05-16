@@ -1,10 +1,10 @@
-package com.perfulandia.cl.Microservicio_ordenes;
+package com.perfulandia.cl.microservicio_orden;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MicroservicioOrdenesApplicationTests {
+class MicroservicioOrdenApplicationTests {
 
 	@Test
 	void contextLoads() {

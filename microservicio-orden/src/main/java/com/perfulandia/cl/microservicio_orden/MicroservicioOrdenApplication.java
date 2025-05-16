@@ -1,13 +1,13 @@
-package com.perfulandia.cl.Microservicio_ordenes;
+package com.perfulandia.cl.microservicio_orden;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MicroservicioOrdenesApplication {
+public class MicroservicioOrdenApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MicroservicioOrdenesApplication.class, args);
+		SpringApplication.run(MicroservicioOrdenApplication.class, args);
 	}
 
 }
