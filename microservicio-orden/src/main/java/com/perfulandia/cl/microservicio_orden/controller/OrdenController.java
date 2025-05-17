@@ -8,6 +8,8 @@ import com.perfulandia.cl.microservicio_orden.model.Orden;
 import com.perfulandia.cl.microservicio_orden.service.OrdenService;
 
 import java.util.List;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.ResponseEntity;
 @RestController
-@RequestMapping("/orden")
+@RequestMapping("/api/v1/orden")
 public class OrdenController {
 
     @Autowired
@@ -51,7 +55,18 @@ public class OrdenController {
         if (!eliminado) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().build(); // Aquí podemos mejorar la convención HTTP
+        return ResponseEntity.ok().build(); 
+        
+    }
+    @PutMapping("/actualizar/{idOrden}")
+    public ResponseEntity<Orden> actualizarOrden(@RequestBody Orden orden,@PathVariable int idOrden){
+
+        Orden ordenActualizada = ordenService.actualizarOrden(orden, idOrden);
+        if (ordenActualizada == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(ordenActualizada, HttpStatus.OK);
+
     }
         
     

@@ -38,8 +38,15 @@ public class OrdenService {
          }
          System.out.println("La orden que desea eliminar no existe");
          return false;
-        
-         
-    }
+         }
+
+         //metodo para actualizar una orden
+         public Orden actualizarOrden(Orden orden, int idOrden){
+            if (ordenRepository.existsById(idOrden)){
+                orden.setIdOrden(idOrden);
+                return ordenRepository.save(orden);
+            }
+            return null;
+         }
 
 }
