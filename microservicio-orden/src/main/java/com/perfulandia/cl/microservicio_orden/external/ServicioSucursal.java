@@ -5,7 +5,7 @@ import com.perfulandia.cl.microservicio_orden.dto.SucursalDTO;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
-@FeingClient(name = "servicio-sucursal", url = url del luciano)
+@FeignClient(name = "servicio-sucursal")
 public interface ServicioSucursal {
 
 }
