@@ -5,8 +5,11 @@ import com.perfulandia.cl.microservicio_orden.dto.ClienteDTO;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
-@FeignClient(name = "servicio-cliente", url = "https://servicio-cliente")
+@FeignClient(name = "CLIENTES-API", url = "${external.servicio-cliente.api.base-url}")
 public interface ServicioCliente {
+
+    @GetMapping("/cliente/{id}")
+    public ClienteDTO getClienteById(@PathVariable int idCliente);
 
 
 

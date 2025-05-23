@@ -17,14 +17,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.ResponseEntity;
+
+
 @RestController
 @RequestMapping("/api/v1/orden")
 public class OrdenController {
 
     @Autowired
     private OrdenService ordenService;
+
+
+    //metodo para llamar a una orden por su id
+    @GetMapping("/{id}")
+    public ResponseEntity<Orden> obtenerOrden(@PathVariable int id){
+        Orden orden = ordenService.obtenerOrden(id);
+        if (orden == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(orden);
+    }
 
     //metodo para mostrar todas las ordenes
     @GetMapping("/listar")
@@ -68,6 +79,7 @@ public class OrdenController {
         return new ResponseEntity<>(ordenActualizada, HttpStatus.OK);
 
     }
-        
+    
+    //
     
 }
