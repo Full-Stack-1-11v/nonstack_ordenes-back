@@ -1,4 +1,8 @@
 package com.perfulandia.cl.microservicio_orden.model;
+import com.perfulandia.cl.microservicio_orden.dto.ClienteDTO;
+import com.perfulandia.cl.microservicio_orden.dto.ProductoDTO;
+import com.perfulandia.cl.microservicio_orden.dto.SucursalDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,11 +25,15 @@ public class Orden {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idOrden;
     
-    @Column(name = "id_cliente")
-    private int idCliente;
+    @Column(name = "id_cliente", nullable = false)
+    private ClienteDTO idCliente;
 
-    @Column(name = "id_producto")
-    private int idProducto;
+    @Column(name = "id_producto", nullable = false)
+    private ProductoDTO idProducto;
+
+    @Column(name = "id_sucursal" ,nullable = false)
+    private SucursalDTO idSucursal;
+
 
     
 
