@@ -36,7 +36,15 @@ public class OrdenController {
         }
         return ResponseEntity.ok(orden);
     }
-
+    //metodo para mostrar todas las ordenes de un cliente
+    @GetMapping("/cliente/{idCliente}")
+    public ResponseEntity<List<Orden>> obtenerOrdenesPorCliente(@PathVariable int idCliente) {
+        List<Orden> ordenes = ordenService.obtenerOrdenesCliente(idCliente);
+        if (ordenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(ordenes);
+    }
     //metodo para mostrar todas las ordenes
     @GetMapping("/listar")
     public ResponseEntity<List<Orden>> listar() {

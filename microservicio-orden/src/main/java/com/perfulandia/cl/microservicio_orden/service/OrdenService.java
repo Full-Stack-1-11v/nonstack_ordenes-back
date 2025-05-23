@@ -49,12 +49,14 @@ public class OrdenService {
         return null;
     }
 
+    //metodo para mostrar todas las ordenes de un cliente
+    public List<Orden> obtenerOrdenesCliente(int idCliente){
+        return ordenRepository.findByIdCliente(idCliente);
+    }
+
     // Método para guardar una orden
     // Este método solo guardaría los IDs en la base de datos
     public Orden guardarOrden(Orden orden){
-        // Aquí no necesitas llamar a los FeignClients si solo guardas los IDs
-        // La validación de que el ID del cliente, producto y sucursal existen
-        // se haría antes de llamar a este método o en un método de creación más complejo.
         return ordenRepository.save(orden);
     }
 
