@@ -15,6 +15,8 @@ import java.util.List;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -33,9 +35,9 @@ public class Orden {
 
     @Column(name = "id_sucursal" ,nullable = false)
     private int idSucursal;
-
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "fecha_creacion")
-    private Date fechaCreacion;
+    private LocalDate fechaCreacion;
 
     
     @Column(name = "total_orden", nullable = false)

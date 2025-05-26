@@ -1,6 +1,5 @@
 package com.perfulandia.cl.microservicio_orden.service;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional; 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.perfulandia.cl.microservicio_orden.model.Orden;
 import com.perfulandia.cl.microservicio_orden.repository.OrdenRepository;
@@ -14,7 +13,12 @@ import com.perfulandia.cl.microservicio_orden.model.DetalleOrden;
 import com.perfulandia.cl.microservicio_orden.model.Producto;
 import feign.FeignException;
 import java.util.ArrayList;
- 
+import java.util.Collections;
+import java.util.stream.Collectors;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.util.Date;
 
 import java.util.List;
 import java.util.Optional; // Necesario para .findById()
@@ -22,6 +26,10 @@ import java.util.Optional; // Necesario para .findById()
 @Service
 @Transactional // Usando jakarta.transaction.Transactional
 public class OrdenService {
+
+    private RestTemplate restTemplate = new RestTemplate();
+
+    private final String PRODUCTOS_API_BASE_URL = "http://localhost:8082/api/v1/productos";
 
     @Autowired
     private OrdenRepository ordenRepository;
@@ -37,6 +45,8 @@ public class OrdenService {
         Orden orden = new Orden();
         orden.setIdCliente(ordenRequest.getIdCliente());
         orden.setIdSucursal(ordenRequest.getIdSucursal());
+        orden.setFechaCreacion(ordenRequest.getFechaCreacion() != null ? 
+            LocalDate.parse(ordenRequest.getFechaCreacion().toString()) : LocalDate.now());
 
         int totalOrden = 0; // ¡Cambiado a int!
 
@@ -132,8 +142,47 @@ public class OrdenService {
 
     
 
-    /// Método para Obtener el Detalle Completo de una Orden
+    @Transactional(readOnly = true) // Solo lectura, no modifica la base de datos
+    public List<ProductoDTO> getTopSellingProducts(int limit) {
+        // Llama al repositorio para obtener los IDs de producto y sus cantidades vendidas
+        // La query nativa devuelve List<Object[]>, donde Object[0] es idProducto y Object[1] es total_vendido
+        List<Object[]> topProductIdsAndQuantities = ordenRepository.findTopSellingProductIdsNative(limit);
 
-    
+        if (topProductIdsAndQuantities.isEmpty()) {
+            return Collections.emptyList(); // Si no hay datos, devuelve una lista vacía
+        }
+
+        // Extrae solo los IDs de los productos para hacer la llamada al microservicio de productos
+        List<Integer> productIds = topProductIdsAndQuantities.stream()
+            .map(row -> (Integer) row[0]) // Mapea cada Object[] a su primer elemento (el ID del producto)
+            .collect(Collectors.toList());
+
+        // Llama al microservicio de productos para obtener el objeto ProductoDTO completo para cada ID
+        List<ProductoDTO> topProducts = productIds.stream()
+            .map(id -> {
+                try {
+                    // Endpoint GET /api/v1/productos/{id}
+                    return restTemplate.getForObject(PRODUCTOS_API_BASE_URL + "/" + id, ProductoDTO.class);
+                } catch (Exception e) {
+                    // Loggear el error, manejarlo, o devolver null y filtrarlo
+                    System.err.println("Error al obtener producto " + id + " del microservicio de productos: " + e.getMessage());
+                    return null; // Si falla, devuelve null para que sea filtrado
+                }
+            })
+            .filter(java.util.Objects::nonNull) // Filtra cualquier producto que no se pudo obtener (fue null)
+            .collect(Collectors.toList());
+
+        return topProducts;
+    }
+
+    //metodo para patch una orden
+    public Orden patchOrden(int idOrden, Orden orden){
+        if (ordenRepository.existsById(idOrden)){
+            orden.setIdOrden(idOrden);
+            return ordenRepository.save(orden);
+        }
+        return null;
+    }
+
     
 }

@@ -1,9 +1,12 @@
 package com.perfulandia.cl.microservicio_orden.dto;
 
+import java.util.Date;
 import java.util.List;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 
 public class OrdenRequest {
 
@@ -18,6 +21,9 @@ public class OrdenRequest {
     @NotEmpty(message = "La orden debe contener al menos un producto.")
     private List<ItemRequest> items;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaCreacion;
+
     public OrdenRequest() {}
 
     public int getIdCliente() { return idCliente; }
@@ -28,6 +34,9 @@ public class OrdenRequest {
 
     public List<ItemRequest> getItems() { return items; }
     public void setItems(List<ItemRequest> items) { this.items = items; }
+
+    public LocalDate getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDate fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
     
 

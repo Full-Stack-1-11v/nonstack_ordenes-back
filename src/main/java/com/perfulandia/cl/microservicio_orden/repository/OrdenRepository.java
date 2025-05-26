@@ -4,6 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.perfulandia.cl.microservicio_orden.model.Orden;
+import com.perfulandia.cl.microservicio_orden.dto.ProductoDTO;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 
 import java.util.List;
 
@@ -23,6 +27,13 @@ public interface OrdenRepository extends JpaRepository<Orden, Integer>{
 
     int findValorTotalByidOrden(int idOrden);
 
+    @Query(value = "SELECT do.id_producto, SUM(do.cantidad) as total_vendido " +
+    "FROM orden_detalle do " +
+    "GROUP BY do.id_producto " +
+    "ORDER BY total_vendido DESC " +
+    "LIMIT 3",
+    nativeQuery = true)
+    List<Object[]> findTopSellingProductIdsNative(@Param("3") int limit);
 
+}   
 
-}

@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
+import com.perfulandia.cl.microservicio_orden.dto.ProductoDTO;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PatchMapping;
+
 
 
 @RestController
@@ -59,7 +63,7 @@ public class OrdenController {
         return ResponseEntity.ok(ordenes); //si hay ordenes, se devuelve un 200 osea un todo bien
     }   
     //metodo para guardar una orden
-    @PostMapping("/guardar")
+    @PostMapping("/guardarOrdenSinDetalle") 
     public ResponseEntity<Orden> guardarOrden(@RequestBody Orden orden){
 
         Orden ordenGuardada = ordenService.guardarOrden(orden);  //guardo la orden
@@ -72,11 +76,12 @@ public class OrdenController {
 
     //metodo para eliminar una orden 
     @DeleteMapping("/eliminar/{idOrden}")
-    public ResponseEntity<Void> eliminarOrden(@PathVariable int id){ // Aquí está el detalle
-        boolean eliminado = ordenService.eliminarOrden(id);
+    public ResponseEntity<Void> eliminarOrden(@PathVariable int idOrden){ // Aquí está el detalle
+        boolean eliminado = ordenService.eliminarOrden(idOrden);
         if (!eliminado) {
             return ResponseEntity.notFound().build();
         }
+        
         return ResponseEntity.ok().build(); 
         
     }
@@ -91,7 +96,7 @@ public class OrdenController {
 
     }
     
-    @PostMapping("/CrearOrden") // Mapea solicitudes HTTP POST a /api/ordenes
+    @PostMapping("/guardar") // Mapea solicitudes HTTP POST a /api/ordenes
     public ResponseEntity<?> crearOrden(@Valid @RequestBody OrdenRequest request) {
         try {
             Orden nuevaOrden = ordenService.crearOrden(request);
@@ -108,5 +113,23 @@ public class OrdenController {
             return new ResponseEntity<>("Error al procesar la orden: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/top-vendidos") // Método GET para obtener recursos
+    public ResponseEntity<List<ProductoDTO>> getTopSellingProducts(
+            @RequestParam(defaultValue = "1") int limit) { // @RequestParam para obtener el parámetro 'limit' de la URL
+        List<ProductoDTO> topProducts = ordenService.getTopSellingProducts(limit);
+        if (topProducts.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Devuelve 204 No Content si no hay resultados
+        }
+        return ResponseEntity.ok(topProducts); // Devuelve 200 OK con la lista de productos
+    }
     
+    @PatchMapping("/actualizar/{idOrden}")
+    public ResponseEntity<Orden> patchOrden(@PathVariable int idOrden, @RequestBody Orden orden){
+        Orden ordenActualizada = ordenService.patchOrden(idOrden, orden);
+        if (ordenActualizada == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(ordenActualizada);
+    }
 }
