@@ -1,21 +1,20 @@
 package com.perfulandia.cl.microservicio_orden.service;
-
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional; 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.perfulandia.cl.microservicio_orden.model.Orden;
 import com.perfulandia.cl.microservicio_orden.repository.OrdenRepository;
-
-// Importaciones de DTOs y FeignClients
-import com.perfulandia.cl.microservicio_orden.dto.ClienteDTO;
+import com.perfulandia.cl.microservicio_orden.converter.ProductoConverter;
 import com.perfulandia.cl.microservicio_orden.dto.ProductoDTO;
-import com.perfulandia.cl.microservicio_orden.dto.SucursalDTO;   
 import com.perfulandia.cl.microservicio_orden.dto.OrdenDetalleDTO; // DTO que enviamos como respuesta
-
-import com.perfulandia.cl.microservicio_orden.external.ServicioCliente;
+import com.perfulandia.cl.microservicio_orden.dto.OrdenRequest;
 import com.perfulandia.cl.microservicio_orden.external.ServicioProducto;
-import com.perfulandia.cl.microservicio_orden.external.ServicioSucursal;   
+import com.perfulandia.cl.microservicio_orden.dto.ItemRequest;
+import com.perfulandia.cl.microservicio_orden.model.DetalleOrden;
+import com.perfulandia.cl.microservicio_orden.model.Producto;
+import feign.FeignException;
+import java.util.ArrayList;
+ 
 
 import java.util.List;
 import java.util.Optional; // Necesario para .findById()
@@ -28,11 +27,62 @@ public class OrdenService {
     private OrdenRepository ordenRepository;
 
     @Autowired
-    private ServicioCliente servicioCliente; // Inyección del FeignClient de Cliente
+    private ServicioProducto servicioProducto;
+
     @Autowired
-    private ServicioProducto servicioProducto; // Inyección del FeignClient de Producto
-    @Autowired
-    private ServicioSucursal servicioSucursal; // Inyección del FeignClient de Sucursal
+    private ProductoConverter productoConverter; // inyeccion de la clase converter
+ 
+
+    public Orden crearOrden(OrdenRequest ordenRequest) {
+        Orden orden = new Orden();
+        orden.setIdCliente(ordenRequest.getIdCliente());
+        orden.setIdSucursal(ordenRequest.getIdSucursal());
+
+        int totalOrden = 0; // ¡Cambiado a int!
+
+        if (ordenRequest.getItems() == null || ordenRequest.getItems().isEmpty()) {
+            throw new IllegalArgumentException("La orden debe contener al menos un producto.");
+        }
+
+        for (ItemRequest itemRequest : ordenRequest.getItems()) { // ¡Usando ItemRequest!
+            if ( itemRequest.getCantidad() <= 0) {
+                throw new IllegalArgumentException("La cantidad para el producto ID " + itemRequest.getIdProducto() + " debe ser al menos 1.");
+            }
+
+            ProductoDTO productoDTO;
+            try {
+                productoDTO = servicioProducto.getProductoById(itemRequest.getIdProducto());
+            } catch (FeignException.NotFound e) {
+                throw new RuntimeException("Producto no encontrado con ID: " + itemRequest.getIdProducto() + ". Detalles: " + e.getMessage());
+            } catch (FeignException e) {
+                throw new RuntimeException("Error al comunicarse con el microservicio de productos para ID " + itemRequest.getIdProducto() + ": " + e.getMessage());
+            }
+
+            if (productoDTO == null) {
+                throw new RuntimeException("Detalles del producto no disponibles para ID: " + itemRequest.getIdProducto());
+            }
+
+            Producto productoDominio = productoConverter.FromDto(productoDTO);
+
+            DetalleOrden detalle = new DetalleOrden();
+            detalle.setIdProducto(productoDominio.getIdProducto());
+            detalle.setNombreProducto(productoDominio.getNombreProducto());
+            detalle.setPrecioUnitario(productoDominio.getPrecioProducto()); // Asigna directamente el int
+            detalle.setCantidad(itemRequest.getCantidad());
+
+            // Calcula el subtotal como int
+            double subtotal = productoDominio.getPrecioProducto() * itemRequest.getCantidad();
+            detalle.setSubtotal(subtotal);
+
+            orden.addDetalle(detalle);
+            
+            totalOrden += subtotal; // Suma como double
+        }
+
+        orden.setTotalOrden(totalOrden);
+        return ordenRepository.save(orden);
+    }
+    
 
 
     // Método para mostrar todas las órdenes
@@ -85,66 +135,5 @@ public class OrdenService {
     /// Método para Obtener el Detalle Completo de una Orden
 
     
-    public OrdenDetalleDTO obtenerDetalleOrden(int idOrden) {
-        // 1. Buscar la orden en tu propia base de datos
-        Optional<Orden> optionalOrden = ordenRepository.findById(idOrden);
-        if (optionalOrden.isEmpty()) {
-            // Manejar el caso donde la orden no existe en tu DB
-            throw new RuntimeException("Orden con ID " + idOrden + " no encontrada en la base de datos");
-        }
-        Orden orden = optionalOrden.get();
-
-        // 2. Usar los FeignClients para obtener detalles de otros microservicios
-        ClienteDTO cliente = null;
-        try {
-            // Asegúrate de que el ID del cliente en tu entidad Orden sea compatible con int
-            // Si tu Orden.id_cliente es Long, conviértelo a int si el FeignClient lo espera.
-            cliente = servicioCliente.getClienteById(orden.getIdCliente());
-            if (cliente == null) {
-                // Si el servicio de cliente devuelve null o no lanza excepción para no encontrado
-                System.out.println("Advertencia: Cliente con ID " + orden.getIdCliente() + " no encontrado en la base de datos");
-                // Opcional: lanzar una excepción si es un requisito que el cliente siempre exista
-                // throw new RuntimeException("Cliente asociado a la orden no encontrado.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al obtener cliente ID " + orden.getIdCliente() + ": " + e.getMessage());
-            // Manejo de errores: Cliente no disponible o error de red
-            // Dependiendo de tu lógica de negocio, podrías devolver un DTO parcial
-            // o lanzar una excepción específica.
-        }
-
-        ProductoDTO producto = null;
-        try {
-            producto = servicioProducto.getProductoById(orden.getIdProducto());
-            if (producto == null) {
-                System.out.println("Advertencia: Producto con ID " + orden.getIdProducto() + " no encontrado en la base de datos");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al obtener producto ID " + orden.getIdProducto() + ": " + e.getMessage());
-        }
-
-        SucursalDTO sucursal = null;
-        try {
-            sucursal = servicioSucursal.getSucursalById(orden.getIdSucursal());
-            if (sucursal == null) {
-                System.out.println("Advertencia: Sucursal con ID " + orden.getIdSucursal() + " no encontrada en la base de datos.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al obtener sucursal ID " + orden.getIdSucursal() + ": " + e.getMessage());
-        }
-
-
-        // 3. Construir el DTO de respuesta (OrdenDetalleDTO)
-        OrdenDetalleDTO detalle = new OrdenDetalleDTO();
-        detalle.setIdOrden(orden.getIdOrden());
-        detalle.setFechaCreacion(orden.getFechaCreacion()); // Asumiendo que tu entidad Orden tiene fecha
-        detalle.setTotal(orden.getTotalOrden());                   // Asumiendo que tu entidad Orden tiene total
-
-        // Asignar los DTOs de otros servicios (pueden ser null si no se encontraron o hubo error)
-        detalle.setCliente(cliente);
-        detalle.setProducto(producto);
-        detalle.setSucursal(sucursal);
-
-        return detalle;
-    }
+    
 }

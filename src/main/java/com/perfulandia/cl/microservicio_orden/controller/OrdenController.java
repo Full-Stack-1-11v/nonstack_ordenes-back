@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.perfulandia.cl.microservicio_orden.model.Orden;
 import com.perfulandia.cl.microservicio_orden.service.OrdenService;
+import com.perfulandia.cl.microservicio_orden.dto.OrdenRequest;
+
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -88,6 +91,22 @@ public class OrdenController {
 
     }
     
-    //
+    @PostMapping("/CrearOrden") // Mapea solicitudes HTTP POST a /api/ordenes
+    public ResponseEntity<?> crearOrden(@Valid @RequestBody OrdenRequest request) {
+        try {
+            Orden nuevaOrden = ordenService.crearOrden(request);
+            // Si la orden se crea con éxito, devuelve la orden y un estado 201 Created
+            return new ResponseEntity<>(nuevaOrden, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Si hay un error de validación de negocio (ej. cantidad <= 0, lista vacía de productos),
+            // devuelve un estado 400 Bad Request con el mensaje de error.
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            // Este catch es más general y capturaría errores del servicio como
+            // "Producto no encontrado" o problemas de comunicación con el microservicio de productos.
+            // Devuelve un estado 500 Internal Server Error.
+            return new ResponseEntity<>("Error al procesar la orden: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     
 }

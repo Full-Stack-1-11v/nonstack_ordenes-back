@@ -17,9 +17,7 @@ public interface OrdenRepository extends JpaRepository<Orden, Integer>{
 
     List<Orden> findByIdCliente(int idCliente);
 
-    //metodo que muestra todos los productos que tiene una orden
-
-    List<Orden> findByIdProducto(int idProducto);
+   
 
     //metodo para ver valor total de una orden
 

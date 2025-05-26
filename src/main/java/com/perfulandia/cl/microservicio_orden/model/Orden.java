@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Entity
@@ -29,9 +31,6 @@ public class Orden {
     @Column(name = "id_cliente", nullable = false)
     private int idCliente;
 
-    @Column(name = "id_producto", nullable = false)
-    private int idProducto;
-
     @Column(name = "id_sucursal" ,nullable = false)
     private int idSucursal;
 
@@ -43,12 +42,16 @@ public class Orden {
     private double totalOrden;
 
      // ¡Nueva relación OneToMany con DetalleOrden!
+     @JsonManagedReference
      @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-     // `mappedBy` indica el campo en DetalleOrden que mapea la relación (private Orden orden)
-     // `cascade = CascadeType.ALL` significa que si persistes/eliminas una Orden, sus Detalles se persistirán/eliminarán
-     // `orphanRemoval = true` si quieres que un detalle se elimine si se quita de la lista de la orden
-     private List<DetalleOrden> detalles; // Una orden tiene muchos detalles
+     private List<DetalleOrden> detalles = new ArrayList<>();
 
+     public void addDetalle(DetalleOrden detalle) {
+        // Añade el detalle a la lista de detalles de esta orden
+        this.detalles.add(detalle);
+        // Establece la referencia inversa, vinculando el detalle de vuelta a esta orden
+        detalle.setOrden(this);
+    }
     
 
     

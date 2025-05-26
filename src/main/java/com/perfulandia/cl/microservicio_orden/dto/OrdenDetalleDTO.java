@@ -14,9 +14,9 @@ public class OrdenDetalleDTO {
     private Date fechaCreacion; // Ejemplo de campo de la Orden
     private double total;                 // Ejemplo de campo de la Orden
 
-    private ClienteDTO cliente;   // DTO del cliente
+    // DTO del cliente
     private ProductoDTO producto; // DTO del producto
-    private SucursalDTO sucursal; // DTO de la sucursal
+ 
 
     
 }
