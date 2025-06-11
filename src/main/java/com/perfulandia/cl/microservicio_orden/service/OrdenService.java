@@ -5,21 +5,17 @@ import com.perfulandia.cl.microservicio_orden.model.Orden;
 import com.perfulandia.cl.microservicio_orden.repository.OrdenRepository;
 import com.perfulandia.cl.microservicio_orden.converter.ProductoConverter;
 import com.perfulandia.cl.microservicio_orden.dto.ProductoDTO;
-import com.perfulandia.cl.microservicio_orden.dto.OrdenDetalleDTO; // DTO que enviamos como respuesta
 import com.perfulandia.cl.microservicio_orden.dto.OrdenRequest;
 import com.perfulandia.cl.microservicio_orden.external.ServicioProducto;
 import com.perfulandia.cl.microservicio_orden.dto.ItemRequest;
 import com.perfulandia.cl.microservicio_orden.model.DetalleOrden;
 import com.perfulandia.cl.microservicio_orden.model.Producto;
 import feign.FeignException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
-import java.util.Date;
-
 import java.util.List;
 import java.util.Optional; // Necesario para .findById()
 
