@@ -114,15 +114,15 @@ public class OrdenController {
         }
     }
 
-    @GetMapping("/top-vendidos") // Método GET para obtener recursos
-    public ResponseEntity<List<ProductoDTO>> getTopSellingProducts(
-            @RequestParam(defaultValue = "1") int limit) { // @RequestParam para obtener el parámetro 'limit' de la URL
-        List<ProductoDTO> topProducts = ordenService.getTopSellingProducts(limit);
-        if (topProducts.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Devuelve 204 No Content si no hay resultados
-        }
-        return ResponseEntity.ok(topProducts); // Devuelve 200 OK con la lista de productos
-    }
+   // @GetMapping("/top-vendidos") // Método GET para obtener recursos
+   // public ResponseEntity<List<ProductoDTO>> getTopSellingProducts(
+   //         @RequestParam(defaultValue = "1") int limit) { // @RequestParam para obtener el parámetro 'limit' de la URL
+   //     List<ProductoDTO> topProducts = ordenService.getTopSellingProducts(limit);
+   //     if (topProducts.isEmpty()) {
+   //         return ResponseEntity.noContent().build(); // Devuelve 204 No Content si no hay resultados
+   //     }
+   //     return ResponseEntity.ok(topProducts); // Devuelve 200 OK con la lista de productos
+  //  }
     
     @PatchMapping("/actualizar/{idOrden}")
     public ResponseEntity<Orden> patchOrden(@PathVariable int idOrden, @RequestBody Orden orden){
