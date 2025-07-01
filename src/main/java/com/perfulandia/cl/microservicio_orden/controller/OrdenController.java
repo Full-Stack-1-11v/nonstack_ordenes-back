@@ -62,18 +62,7 @@ public class OrdenController {
         }
         return ResponseEntity.ok(ordenes); //si hay ordenes, se devuelve un 200 osea un todo bien
     }   
-    //metodo para guardar una orden
-    @PostMapping("/guardarOrdenSinDetalle") 
-    public ResponseEntity<Orden> guardarOrden(@RequestBody Orden orden){
-
-        Orden ordenGuardada = ordenService.guardarOrden(orden);  //guardo la orden
-        if (ordenGuardada == null){
-            return ResponseEntity.badRequest().build(); //si no se guardo, devuelvo un 400
-        }
-        System.out.println("Orden guardada correctamente"); //si se guardo, devuelvo un 200 y un mensaje que confirma
-        return ResponseEntity.ok(ordenGuardada);    //devuelvo la orden guardada
-    }
-
+    
     //metodo para eliminar una orden 
     @DeleteMapping("/eliminar/{idOrden}")
     public ResponseEntity<Void> eliminarOrden(@PathVariable int idOrden){ // Aquí está el detalle
@@ -114,15 +103,7 @@ public class OrdenController {
         }
     }
 
-   // @GetMapping("/top-vendidos") // Método GET para obtener recursos
-   // public ResponseEntity<List<ProductoDTO>> getTopSellingProducts(
-   //         @RequestParam(defaultValue = "1") int limit) { // @RequestParam para obtener el parámetro 'limit' de la URL
-   //     List<ProductoDTO> topProducts = ordenService.getTopSellingProducts(limit);
-   //     if (topProducts.isEmpty()) {
-   //         return ResponseEntity.noContent().build(); // Devuelve 204 No Content si no hay resultados
-   //     }
-   //     return ResponseEntity.ok(topProducts); // Devuelve 200 OK con la lista de productos
-  //  }
+   
     
     @PatchMapping("/actualizar/{idOrden}")
     public ResponseEntity<Orden> patchOrden(@PathVariable int idOrden, @RequestBody Orden orden){
